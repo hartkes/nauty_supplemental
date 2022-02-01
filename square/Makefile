@@ -16,10 +16,16 @@ INCLUDE_DIRS=-I${NAUTYPATH}
 NAUTYFILES=gtoolsL.o
 NAUTYCOMPILEFILES=$(addprefix $(NAUTYPATH)/,$(NAUTYFILES))
 
-all: squareg is_square_complete
+all: squareg injective_g exact_distance2_g is_square_complete
 
 squareg: squareg.c
 	${CC} ${CFLAGS} ${INCLUDE_DIRS} ${L1} -o squareg squareg.c $(NAUTYCOMPILEFILES)
+
+injective_g: injective_g.c
+	${CC} ${CFLAGS} ${INCLUDE_DIRS} ${L1} -o injective_g injective_g.c $(NAUTYCOMPILEFILES)
+
+exact_distance2_g: exact_distance2_g.c
+	${CC} ${CFLAGS} ${INCLUDE_DIRS} ${L1} -o exact_distance2_g exact_distance2_g.c $(NAUTYCOMPILEFILES)
 
 is_square_complete: is_square_complete.c
 	${CC} ${CFLAGS} ${INCLUDE_DIRS} ${L1} -o is_square_complete is_square_complete.c $(NAUTYCOMPILEFILES)
