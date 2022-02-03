@@ -42,13 +42,11 @@ int main(int argc, char* argv[])
             
             for (i=j-1; i>=0; i--)
             {
-                if (i==j)
-                    continue;
                 if (
                     ISELEMENT(gj,i)  /* i and j are adjacent in G */
                     ||
                     ((*gj) & (*GRAPHROW(g,i,m)))  /* i and j have a common neighbor in G */
-                    )
+                   )
                     ADDONEEDGE(h,i,j,m);  /* also adds to H edge between j and i */
             }
         }
