@@ -16,7 +16,7 @@ INCLUDE_DIRS=-I${NAUTYPATH}
 NAUTYFILES=gtoolsL.o
 NAUTYCOMPILEFILES=$(addprefix $(NAUTYPATH)/,$(NAUTYFILES))
 
-all: squareg injective_g exact_distance2_g is_square_complete
+all: squareg injective_g exact_distance2_g is_square_complete subdivide_each_edge
 
 squareg: squareg.c
 	${CC} ${CFLAGS} ${INCLUDE_DIRS} ${L1} -o squareg squareg.c $(NAUTYCOMPILEFILES)
@@ -29,6 +29,9 @@ exact_distance2_g: exact_distance2_g.c
 
 is_square_complete: is_square_complete.c
 	${CC} ${CFLAGS} ${INCLUDE_DIRS} ${L1} -o is_square_complete is_square_complete.c $(NAUTYCOMPILEFILES)
+
+subdivide_each_edge: subdivide_each_edge.c
+	${CC} ${CFLAGS} ${INCLUDE_DIRS} ${L1} -o subdivide_each_edge subdivide_each_edge.c $(NAUTYCOMPILEFILES)
 
 clean:
 	rm -f squareg is_square_complete
