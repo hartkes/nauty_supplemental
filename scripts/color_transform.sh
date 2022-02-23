@@ -23,7 +23,7 @@ while read -r line
 do
   tmpfile="$(mktemp /tmp/color_g6.XXXXXXXXXX)"
   echo "$line" | "$transform" | graph6_to_dimacs > "$tmpfile"
-  output=$(color -l 30 "$tmpfile" | grep finished)
+  output=$(color -l 120 "$tmpfile" | grep finished)
   LB=$(echo $output | cut -d' ' -f 5)
   UB=$(echo $output | cut -d' ' -f 8)
   if [ "$UB" -gt "$upperboundlimit" ]
