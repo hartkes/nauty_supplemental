@@ -34,4 +34,4 @@ subdivide_each_edge: subdivide_each_edge.c
 	${CC} ${CFLAGS} ${INCLUDE_DIRS} ${L1} -o subdivide_each_edge subdivide_each_edge.c $(NAUTYCOMPILEFILES)
 
 clean:
-	rm -f squareg is_square_complete
+	rm -f squareg injective_g exact_distance2_g is_square_complete subdivide_each_edge
