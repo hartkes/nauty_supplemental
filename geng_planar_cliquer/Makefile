@@ -26,8 +26,8 @@ NAUTYCOMPILEFILES=$(addprefix $(NAUTYPATH)/,$(NAUTYFILES))
 CLIQUERFILES=cliquer.o graph.o reorder.o
 CLIQUERCOMPILEFILES=$(addprefix $(CLIQUERPATH)/,$(CLIQUERFILES))
 
-gengL_planar_cliquer: nonplanar_cliquer_prune.c
-	${CC} ${CFLAGS} ${INCLUDE_DIRS} ${L1} -o gengL_planar_cliquer -DPRUNE=nonplanar_cliquer_prune nonplanar_cliquer_prune.c $(NAUTYCOMPILEFILES) $(CLIQUERCOMPILEFILES)
+gengL_planar_cliquer_complement: nonplanar_cliquer_prune.c
+	${CC} ${CFLAGS} ${INCLUDE_DIRS} ${L1} -o gengL_planar_cliquer_complement -DPRUNE=nonplanar_cliquer_prune nonplanar_cliquer_prune.c $(NAUTYCOMPILEFILES) $(CLIQUERCOMPILEFILES)
 
 clean:
-	rm -f gengL_planar_cliquer
+	rm -f gengL_planar_cliquer_complement

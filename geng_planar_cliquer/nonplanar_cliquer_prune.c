@@ -34,7 +34,7 @@ boolean square_independence_bounded(graph *g,int n,int maxn)
     }
     
     /* set target upper bound */
-    const int geng_maxdeg=3;  /* should be global variable from geng.c */
+    const int geng_maxdeg=4;  /* should be global variable from geng.c */
     int target_upper_bound;
     int final_bound;  /* for graph of size maxn, the square independence number */
     int square_chi_bound;
@@ -42,15 +42,21 @@ boolean square_independence_bounded(graph *g,int n,int maxn)
     {
        square_chi_bound=7;
        final_bound=(maxn-1)/(square_chi_bound-1);
-       target_upper_bound=final_bound + //(maxn-n+1)/2;
-                    //((maxn-n <=4) ? (maxn-n+1)/2 : maxn-n+2);
-                    maxn-n;
+       target_upper_bound=
+                    maxn-n<=1
+                    ? final_bound+maxn-n
+                    : (n+3)/4;  // round up
+                    //((maxn-n <=0) ? 0 : 1);
     }
     else if (geng_maxdeg==4)  /* global variable from geng.c */
     {
        square_chi_bound=geng_maxdeg+5;
        final_bound=(maxn-1)/(square_chi_bound-1);
-       target_upper_bound=final_bound + (maxn-n);
+       target_upper_bound=
+                    maxn-n<=1
+                    ? final_bound+maxn-n
+                    : (n+4)/5;  // round up
+                    //final_bound + (maxn-n);
     }
    //printf("D=%d n=%d max=%d final_bound=%d target_upper_bound=%d square_chi_bound=%d\n",geng_maxdeg,n,maxn,final_bound,target_upper_bound,square_chi_bound);
     
@@ -188,10 +194,21 @@ int nonplanar_cliquer_prune(graph *g,int n,int maxn)
     DYNALLSTAT(t_ver_sparse_rep,V,V_sz);
     DYNALLSTAT(t_adjl_sparse_rep,A,A_sz);
     
+    setword h[128];  /* h is of type (graph *), with m=1 and n<=128 */
+    
+    /* complement g into h */
+    setword complement=~((~(setword)0)>>(n-1));  /* top n-1 bits set */
+    for (i=n-1; i>=0; i--)
+    {
+        h[i]=g[i] ^ complement;
+        complement<<=1;
+        complement|=((setword)1)<<(WORDSIZE-n);  /* replace bit for vertex n-1 */
+    }
+    
     //printf("starting PRUNE n=%d maxn=%d\n",n,maxn);
     SG_INIT(sg);
     {
-        nauty_to_sg(g,&sg,1,n);  /* m=1 for graph g passed to prune function */
+        nauty_to_sg((graph *)h,&sg,1,n);  /* m=1 for graph g passed to prune function */
         ne = (sg.nde+loops)/2;
         ++nin;
 
@@ -238,7 +255,7 @@ int nonplanar_cliquer_prune(graph *g,int n,int maxn)
         if (isplanar(V,n,A,ne,&nbr_c,&VR,&AR,&ER,&nbr_e_obs,
                      0,0))
         {
-            return square_independence_bounded(g,n,maxn);
+            return square_independence_bounded(h,n,maxn);
         }
         else
         {
