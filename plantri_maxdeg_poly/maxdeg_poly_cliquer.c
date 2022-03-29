@@ -66,6 +66,14 @@ maxdeg_poly_filter_cliquer(int nbtot, int nbop, int doflip)
 		} while (e != elast);
     }
     
+    /*
+    if (!graph_test(clg,NULL))
+	{
+		printf("clg is not good!\n");
+		exit(5);
+	}
+	*/
+    
     /* form square */
 	graph_t *clh=graph_new(nv);
 	for (int v=nv-1; v>=0; v--)
@@ -79,7 +87,17 @@ maxdeg_poly_filter_cliquer(int nbtot, int nbop, int doflip)
 				][0];
 			neighbors&=(neighbors-1);  // clear the bottom bit
 		}
+		clh->edges[v][0]=(clg->edges[v][0] | second_neighborhood)  /* neighbors of v in the square are the union of the nbrs of v in G and the second neighborhood */
+		                 ^ ((setelement)1<<v);  // but clear the bit so no loop
 	}
+	
+	/*
+    if (!graph_test(clh,NULL))
+	{
+		printf("clh is not good after forming square!\n");
+		exit(5);
+	}
+	*/
 	
 	/* form complement */
 	setelement complement=(((setelement)1)<<(nv-1))-1;
@@ -91,6 +109,14 @@ maxdeg_poly_filter_cliquer(int nbtot, int nbop, int doflip)
 		complement|=((setelement)1)<<(nv-1);  // replace the high bit
 	}
     
+    /*
+    if (!graph_test(clh,NULL))
+	{
+		printf("clh is not good after complement!\n");
+		exit(5);
+	}
+	*/
+	
     /* call cliquer */
     clique_default_options->time_function=NULL;
     
