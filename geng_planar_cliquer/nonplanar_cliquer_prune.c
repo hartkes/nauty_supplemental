@@ -34,7 +34,7 @@ boolean square_independence_bounded(graph *g,int n,int maxn)
     }
     
     /* set target upper bound */
-    const int geng_maxdeg=4;  /* should be global variable from geng.c */
+    const int geng_maxdeg=5;  /* should be global variable from geng.c */
     int target_upper_bound;
     int final_bound;  /* for graph of size maxn, the square independence number */
     int square_chi_bound;
@@ -58,6 +58,15 @@ boolean square_independence_bounded(graph *g,int n,int maxn)
                     : (n+4)/5;  // round up
                     //final_bound + (maxn-n);
     }
+    else if (geng_maxdeg==5)  /* global variable from geng.c */
+    {
+       square_chi_bound=geng_maxdeg+5;
+       final_bound=(maxn-1)/(square_chi_bound-1);
+       target_upper_bound=
+                    maxn-n<=1
+                    ? final_bound+maxn-n
+                    : (n+5)/6;  // round up
+    }
    //printf("D=%d n=%d max=%d final_bound=%d target_upper_bound=%d square_chi_bound=%d\n",geng_maxdeg,n,maxn,final_bound,target_upper_bound,square_chi_bound);
     
     /* call cliquer */
@@ -67,6 +76,8 @@ boolean square_independence_bounded(graph *g,int n,int maxn)
                         target_upper_bound+1,target_upper_bound+1,FALSE,NULL);
     if (max_indep==NULL)  /* clg has clique number <=target_upper_bound */
     {
+        //return 0;  // looking for counterexample
+
         /* We check whether the graph has square clique number equal to square_chi_bound */
         /* and reject if so. */
         
