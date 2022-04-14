@@ -117,9 +117,44 @@ square_independence_bounded()
 						FALSE,NULL);
     if (max_indep==NULL)  /* clg has clique number <=2 */
     {
-		graph_free(clg);
-		graph_free(clh);
-		return TRUE;  /* keep this graph */
+		if (nv<=maxdeg_poly+5)  /* not enough vertices */
+		{
+            graph_free(clg);
+			graph_free(clh);
+            return TRUE;  /* keep this graph */
+		}
+		
+		/* form complement */
+		setelement complement=(((setelement)1)<<(nv-1))-1;
+			/* complement has the bottom n-1 1s set [in positions 0..n-2], and 0s otherwise */
+		for (int v=nv-1; v>=0; v--)
+		{
+			clh->edges[v][0]^=complement;
+			complement>>=1;
+			complement|=((setelement)1)<<(nv-1);  // replace the high bit
+		}
+        
+        //printf("clg is good? %d\n",graph_test(clg,NULL));
+        
+        //printf("square indep num is <= target_upper_bound, testing square clique number\n");
+        
+        set_t max_clique=clique_unweighted_find_single(clh,
+                            maxdeg_poly+5,maxdeg_poly+5,FALSE,NULL);
+        //printf("cliquer finished\n");
+        if (max_clique!=NULL)  /* clg has clique number >=maxdeg_poly+5 */
+        {
+            set_free(max_clique);
+            graph_free(clg);
+			graph_free(clh);
+            return FALSE;  /* prune this graph, it has maximum clique number */
+        }
+        else
+        {
+            //printf("keeping D=%d n=%d max=%d final_bound=%d target_upper_bound=%d square_chi_bound=%d\n",geng_maxdeg,n,maxn,final_bound,target_upper_bound,square_chi_bound);
+            graph_free(clg);
+			graph_free(clh);
+            return TRUE;  /* keep this graph */
+        }
     }
     else  /* the square of g has an independent set that is bigger than target_upper_bound */
     {
