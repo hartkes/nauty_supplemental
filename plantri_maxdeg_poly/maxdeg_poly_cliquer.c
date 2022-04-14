@@ -15,6 +15,7 @@ static int maxdeg = 6;
 static int maxdeg_poly = 4;
 
 #define FILTER maxdeg_poly_filter_cliquer
+#define PRE_FILTER_POLY square_independence_bounded()
 #define PRE_FILTER_SIMPLE maxdeg_prune()
 
 /*******************************************************************/ 
@@ -39,18 +40,9 @@ static int maxdeg_poly = 4;
 /*********************************************************************/
 
 static int
-maxdeg_poly_filter_cliquer(int nbtot, int nbop, int doflip)
+square_independence_bounded()
 {
-	register int i;
-
-	for (i = 0; i < nv; ++i)
-	   if (degree[i] > maxdeg_poly) return FALSE;
-	
-	/* max deg of the polytope is <= maxdeg_poly */
-	
-	/* We now check whether the square has independence number at most 2. */
-	
-	/* cliquer routines */
+	/* We now check whether the square has independence number at most 2, using cliquer. */
 	
 	/* create cliquer graph from plantri graph */
     graph_t *clg=graph_new(nv);  /* graph is empty */
@@ -125,40 +117,9 @@ maxdeg_poly_filter_cliquer(int nbtot, int nbop, int doflip)
 						FALSE,NULL);
     if (max_indep==NULL)  /* clg has clique number <=2 */
     {
-        /* We check whether the graph has square clique number equal to square_chi_bound */
-        /* and reject if so. */
-        
-		/* form complement */
-		setelement complement=(((setelement)1)<<(nv-1))-1;
-			/* complement has the bottom n-1 1s set [in positions 0..n-2], and 0s otherwise */
-		for (int v=nv-1; v>=0; v--)
-		{
-			clh->edges[v][0]^=complement;
-			complement>>=1;
-			complement|=((setelement)1)<<(nv-1);  // replace the high bit
-		}
-        
-        //printf("clg is good? %d\n",graph_test(clg,NULL));
-        
-        //printf("square indep num is <= target_upper_bound, testing square clique number\n");
-        
-        set_t max_clique=clique_unweighted_find_single(clh,
-                            maxdeg_poly+5,maxdeg_poly+5,FALSE,NULL);
-        //printf("cliquer finished\n");
-        if (max_clique!=NULL)  /* clg has clique number >=maxdeg_poly+5 */
-        {
-            set_free(max_clique);
-            graph_free(clg);
-			graph_free(clh);
-            return FALSE;  /* prune this graph */
-        }
-        else
-        {
-            //printf("keeping D=%d n=%d max=%d final_bound=%d target_upper_bound=%d square_chi_bound=%d\n",geng_maxdeg,n,maxn,final_bound,target_upper_bound,square_chi_bound);
-            graph_free(clg);
-			graph_free(clh);
-            return TRUE;  /* keep this graph */
-        }
+		graph_free(clg);
+		graph_free(clh);
+		return TRUE;  /* keep this graph */
     }
     else  /* the square of g has an independent set that is bigger than target_upper_bound */
     {
@@ -167,9 +128,23 @@ maxdeg_poly_filter_cliquer(int nbtot, int nbop, int doflip)
 		graph_free(clh);
         return FALSE;  /* prune this graph */
     }
-	
-	return TRUE;
 }
+
+
+static int
+maxdeg_poly_filter_cliquer(int nbtot, int nbop, int doflip)
+{
+	register int i;
+
+	for (i = 0; i < nv; ++i)
+	   if (degree[i] > maxdeg_poly) return FALSE;
+	
+	/* max deg of the polytope is <= maxdeg_poly */
+	
+	/* We now check whether the square has independence number at most 2. */
+	return square_independence_bounded();
+}
+
 
 /*********************************************************************
 The following is used to prune the search tree at levels below maxnv.
@@ -220,7 +195,7 @@ maxdeg_prune()
 		excess += degree[i] - maxdeg;
 	}
 
-	if (excess == 0) return TRUE;
+	if (excess == 0) return square_independence_bounded();  /*TRUE;*/
 
 	if (d3 > 2) return FALSE;
 	if (d3 == 2 && !commonedge(d3a,d3b)) return FALSE;
@@ -229,5 +204,5 @@ maxdeg_prune()
 	i = d3 + d3 + d4;
 	if (i > 0 && excess > levs - i + 2) return FALSE;
 
-	return TRUE;
+	return square_independence_bounded();  /*TRUE;*/
 }
