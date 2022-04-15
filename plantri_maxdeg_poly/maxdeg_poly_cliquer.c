@@ -13,6 +13,7 @@
 
 static int maxdeg = 6;
 static int maxdeg_poly = 4;
+static int max_square_ind_num = 2;
 
 #define FILTER maxdeg_poly_filter_cliquer
 #define PRE_FILTER_POLY square_independence_bounded()
@@ -23,10 +24,10 @@ static int maxdeg_poly = 4;
 /* The following adds the switch D to those normally present.
    and specifies a subset of the switches as permitted. */
 
-#define PLUGIN_SWITCHES  INTSWITCH('D',maxdeg) INTSWITCH('H',maxdeg_poly)
+#define PLUGIN_SWITCHES  INTSWITCH('D',maxdeg) INTSWITCH('H',maxdeg_poly) INTSWITCH('I',max_square_ind_num)
 
 #undef SWITCHES
-#define SWITCHES "[-D# -H# -cmpf -uagsh -odG -v]"
+#define SWITCHES "[-D# -H# -I# -cmpf -uagsh -odG -v]"
 #define HELPMESSAGE \
   fprintf(stderr,"Specify the allowed maximum degree for triangulation with -D#, for polytope with -H#.\n")
 #define PLUGIN_INIT \
@@ -113,49 +114,14 @@ square_independence_bounded()
     clique_default_options->time_function=NULL;
     
     set_t max_indep=clique_unweighted_find_single(clh,
-                        3,3,
+                        max_square_ind_num+1,max_square_ind_num+1,
 						FALSE,NULL);
     if (max_indep==NULL)  /* clg has clique number <=2 */
     {
-		if (nv<=maxdeg_poly+5)  /* not enough vertices */
-		{
-            graph_free(clg);
-			graph_free(clh);
-            return TRUE;  /* keep this graph */
-		}
-		
-		/* form complement */
-		setelement complement=(((setelement)1)<<(nv-1))-1;
-			/* complement has the bottom n-1 1s set [in positions 0..n-2], and 0s otherwise */
-		for (int v=nv-1; v>=0; v--)
-		{
-			clh->edges[v][0]^=complement;
-			complement>>=1;
-			complement|=((setelement)1)<<(nv-1);  // replace the high bit
-		}
-        
-        //printf("clg is good? %d\n",graph_test(clg,NULL));
-        
-        //printf("square indep num is <= target_upper_bound, testing square clique number\n");
-        
-        set_t max_clique=clique_unweighted_find_single(clh,
-                            maxdeg_poly+5,maxdeg_poly+5,FALSE,NULL);
-        //printf("cliquer finished\n");
-        if (max_clique!=NULL)  /* clg has clique number >=maxdeg_poly+5 */
-        {
-            set_free(max_clique);
-            graph_free(clg);
-			graph_free(clh);
-            return FALSE;  /* prune this graph, it has maximum clique number */
-        }
-        else
-        {
-            //printf("keeping D=%d n=%d max=%d final_bound=%d target_upper_bound=%d square_chi_bound=%d\n",geng_maxdeg,n,maxn,final_bound,target_upper_bound,square_chi_bound);
-            graph_free(clg);
-			graph_free(clh);
-            return TRUE;  /* keep this graph */
-        }
-    }
+		graph_free(clg);
+		graph_free(clh);
+		return TRUE;  /* keep this graph */
+	}
     else  /* the square of g has an independent set that is bigger than target_upper_bound */
     {
         set_free(max_indep);
@@ -163,6 +129,81 @@ square_independence_bounded()
 		graph_free(clh);
         return FALSE;  /* prune this graph */
     }
+}
+
+
+static int
+square_clique_bounded()
+{
+	/* We now check whether the square has large clique, using cliquer. */
+	
+	/* create cliquer graph from plantri graph */
+    graph_t *clg=graph_new(nv);  /* graph is empty */
+    for (int v=nv-1; v>=0; v--)
+    {
+		EDGE *e,*elast;
+
+		e = elast = firstedge[v];
+		do
+		{
+			GRAPH_ADD_EDGE(clg,v,e->end);  /* also adds edge between e->end and v */
+			e = e->next;
+		} while (e != elast);
+    }
+    
+    /*
+    if (!graph_test(clg,NULL))
+	{
+		printf("clg is not good!\n");
+		exit(5);
+	}
+	*/
+    
+    /* form square */
+	graph_t *clh=graph_new(nv);
+	for (int v=nv-1; v>=0; v--)
+	{
+		setelement neighbors=clg->edges[v][0];
+		setelement second_neighborhood=0;
+		while (neighbors)  /* neighbors of v remaining */
+		{
+			second_neighborhood|=clg->edges[
+					__builtin_ctzll(neighbors)  // count trailing zeroes
+				][0];
+			neighbors&=(neighbors-1);  // clear the bottom bit
+		}
+		clh->edges[v][0]=(clg->edges[v][0] | second_neighborhood)  /* neighbors of v in the square are the union of the nbrs of v in G and the second neighborhood */
+		                 ^ ((setelement)1<<v);  // but clear the bit so no loop
+	}
+	
+	/*
+    if (!graph_test(clh,NULL))
+	{
+		printf("clh is not good after forming square!\n");
+		exit(5);
+	}
+	*/
+	
+    /* call cliquer */
+    clique_default_options->time_function=NULL;
+    
+	set_t max_clique=clique_unweighted_find_single(clg,
+						maxdeg_poly+5,maxdeg_poly+5,FALSE,NULL);
+	//printf("cliquer finished\n");
+	if (max_clique!=NULL)  /* clg has clique number >=maxdeg_poly+5 */
+	{
+		set_free(max_clique);
+		graph_free(clg);
+		graph_free(clh);
+		return FALSE;  /* prune this graph, it has maximum clique number */
+	}
+	else
+	{
+		//printf("keeping D=%d n=%d max=%d final_bound=%d target_upper_bound=%d square_chi_bound=%d\n",geng_maxdeg,n,maxn,final_bound,target_upper_bound,square_chi_bound);
+		graph_free(clg);
+		graph_free(clh);
+		return TRUE;  /* keep this graph */
+	}
 }
 
 
