@@ -187,7 +187,7 @@ square_clique_bounded()
     /* call cliquer */
     clique_default_options->time_function=NULL;
     
-	set_t max_clique=clique_unweighted_find_single(clg,
+	set_t max_clique=clique_unweighted_find_single(clh,
 						maxdeg_poly+5,maxdeg_poly+5,FALSE,NULL);
 	//printf("cliquer finished\n");
 	if (max_clique!=NULL)  /* clg has clique number >=maxdeg_poly+5 */
