@@ -217,8 +217,8 @@ maxdeg_poly_filter_cliquer(int nbtot, int nbop, int doflip)
 	
 	/* max deg of the polytope is <= maxdeg_poly */
 	
-	/* We now check whether the square has independence number at most 2. */
-	return square_independence_bounded();
+	/* We now check whether the square has large clique number. */
+	return square_clique_bounded();
 }
 
 
