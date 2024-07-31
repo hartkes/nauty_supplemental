@@ -21,6 +21,16 @@ uint64_t bit_reversal(uint64_t x)
 
 int main(int argc, char* argv[])
 {
+    if (argc<2)
+    {
+        printf("SYNTAX: clique_graph6 <lower_bound>\n");
+        printf("Reads graph6 strings in on stdin, prints out the graph6 strings of graphs with clique number >=lower_bound\n");
+        exit(99);
+    }
+    
+    int lower_bound;
+    sscanf(argv[1],"%d",&lower_bound);
+    
     char *infilename,*outfilename;
     FILE *infile,*outfile;
     int codetype;
@@ -29,7 +39,6 @@ int main(int argc, char* argv[])
     int m,n;
     
     graph_t *clg;  /* for cliquer */
-    
     
     
     int i,j;
@@ -46,7 +55,6 @@ int main(int argc, char* argv[])
     {
         if ((g = readg(infile,NULL,0,&m,&n)) == NULL)  // dynamic allocation of g
             break;
-        writeg6(outfile,g,m,n);
         
         /* We need to bit reverse the adjacency matrix of g to form clg.
          * Since nauty puts vertex 0 in the most significant bit position,
@@ -61,14 +69,16 @@ int main(int argc, char* argv[])
         
         clique_default_options->time_function=NULL;
         
-        int target_upper_bound=2;
         set_t max_clique=clique_unweighted_find_single(clg,
-                            target_upper_bound+1,target_upper_bound+1,FALSE,NULL);
-        if (max_clique==NULL)  /* clg has clique number <=target_upper_bound */
-            printf("has a clique of size at most %d\n",target_upper_bound);
+                            lower_bound,0,FALSE,NULL);
+        if (max_clique==NULL)  /* clg has clique number <lower_upper_bound */
+            ;
         else
+        {
+            writeg6(outfile,g,m,n);
+            //printf("has a clique of size at least %d\n",lower_bound);
             set_free(max_clique);
-        
+        }
         
         graph_free(clg);
         FREES(g);
