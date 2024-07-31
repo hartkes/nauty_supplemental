@@ -26,6 +26,7 @@ static int maxdeg_poly = 4;
 #define SWITCHES "[-D# -H# -cmpf -uagsh -odG -v]"
 #define HELPMESSAGE \
   fprintf(stderr,"Specify the allowed maximum degree for triangulation with -D#, for polytope with -H#.\n")
+/*
 #define PLUGIN_INIT \
   if ((minconnec != 3 && minconnec >= 0 \
        || minimumdeg != 3 && minimumdeg >= 0)  && !qswitch) \
@@ -33,6 +34,7 @@ static int maxdeg_poly = 4;
      fprintf(stderr,">E -c is only allowed with -q\n"); \
      exit(1); \
   }
+*/
 
 /*********************************************************************/
 
